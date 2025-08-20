@@ -1,0 +1,52 @@
+services:
+  auth-api:
+    build:
+      dockerfile: ../Dockerfile
+      context: ./auth-api
+    container_name: auth-api
+    hostname: auth-api
+    depends_on:
+      - postgres
+      - data-api
+    environment:
+      POSTGRES_URL: ${POSTGRES_URL}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+      - db-network
+
+  data-api:
+    build:
+      dockerfile: ../Dockerfile
+      context: ./data-api
+    container_name: data-api
+    hostname: data-api
+    environment:
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN}
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:17.6-alpine
+    hostname: postgres
+    environment:
+      TZ: 'Europe/Kyiv'
+      PGTZ: 'Europe/Kyiv'
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    networks:
+      - db-network
+
+networks:
+  app-network:
+    driver: bridge
+  db-network:
+    driver: bridge
